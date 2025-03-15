@@ -39,7 +39,7 @@ def add_tpo_sort(file_name):
     return sortPrefix
 
 
-def fts_txt_indexer(in_dir="output_text", db="fts_tipitaka.db"):
+def fts_txt_indexer(in_dir: str):
     """Indexing notes:
     Do not use the entire file content as one string to index path, content
     Because of these reasons:
@@ -50,6 +50,8 @@ def fts_txt_indexer(in_dir="output_text", db="fts_tipitaka.db"):
         tuble_list = [(path, entire_file_text)]
         c.executemany("INSERT INTO pn VALUES (?,?)", tuble_list)
     """
+
+    db = f"{in_dir}.db"
 
     if os.path.isfile(db):
         os.remove(db)
@@ -62,6 +64,7 @@ def fts_txt_indexer(in_dir="output_text", db="fts_tipitaka.db"):
         [f.split(".vol", 1)[0] + ".txt" for f in os.listdir(in_dir) if ".vol" in f]
     )
     duplicated_books = list(set(vols))
+    print("Duplicated books:", duplicated_books)
 
     filenames = sorted(
         [
@@ -71,10 +74,18 @@ def fts_txt_indexer(in_dir="output_text", db="fts_tipitaka.db"):
         ]
     )
 
-    
+    print("Total files to index", len(filenames))
     n = 0
+    with open("./data/fts_chapter_title.json", "r", encoding="utf-8") as f:
+        chapter_title_json = json.load(f)
+
     for filename in filenames:
         file_key = filename[0:-4]  # remove .txt
+
+        chapter_title = chapter_title_json.get(file_key, None)
+        if not chapter_title:
+            raise Exception(f"No chapter title found for {file_key}")
+
         sort_prefix = add_tpo_sort(file_key)
 
         full_path = os.path.join(in_dir, filename)
@@ -82,6 +93,7 @@ def fts_txt_indexer(in_dir="output_text", db="fts_tipitaka.db"):
             lines = f.readlines()
         pat_cont_tubple_list = []
         for line in lines:
+            # only index line length >=3
             if not line.strip() or len(line.strip()) < 3:
                 continue
             text = line.strip()
@@ -93,10 +105,11 @@ def fts_txt_indexer(in_dir="output_text", db="fts_tipitaka.db"):
             text = text[text.find(" ") + 1 :]
             path_id = sort_prefix + "@" + file_key + "@" + k_id
             pat_cont_tubple_list.append((path_id, text))
-        
+
         c.executemany("INSERT INTO pn VALUES (?,?)", pat_cont_tubple_list)
         n += 1
-        print(str(n) + ". Indexed: " + filename)
+        if n % 1000 == 0:
+            print(str(n) + ". Indexed: " + filename)
 
     print("Optimizing the database...")
     c.execute("INSERT INTO pn(pn) VALUES('optimize')")
@@ -108,4 +121,4 @@ def fts_txt_indexer(in_dir="output_text", db="fts_tipitaka.db"):
 
 
 if __name__ == "__main__":
-    fts_txt_indexer()
+    fts_txt_indexer("chapter_flutter_ro_txt")

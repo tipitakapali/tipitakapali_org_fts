@@ -1,5 +1,17 @@
 # Tipitakapali.org FTS
 
-Input HTML book files of: Tipitakapali.org/book
+Full-Text Search (FTS) for the **Tipitakapali.org**, (also computer, Flutter apps) chapter files.
 
+## Input  
 
+🔗 [Tipitakapali.org/chapter](https://tipitakapali.org/chapter)
+
+## Developer Notes  
+
+If your given name is uPNRY, you should not be confused:
+
+#### Roman Pali Chapter Files  
+- The **Electron and Flutter apps** include `<div>` elements for **Ctrl + F** search, while the **web files** do not.  
+- Files hosted on **Cloudflare Pages** include the `<meta property="og:url" content="...">` tag but do **not** have a `.html` file extension.  
+
+Despite these structural differences, the **FTS of CST content remains the same** across all versions.  

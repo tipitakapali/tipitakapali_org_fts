@@ -11,7 +11,6 @@ import os
 import re
 from bs4 import BeautifulSoup
 import shutil
-import sys
 
 
 def clean_tpo_html(text):
@@ -28,14 +27,14 @@ def clean_tpo_html(text):
     return text.strip()
 
 
-def copy_listed_files(from_dir):
+def copy_listed_files(filenames_txt, from_dir, to_dir):
     """Copy files listed in book.txt from from_dir to ./book directory"""
     # Create book directory if it doesn't exist
-    if not os.path.exists("book"):
-        os.makedirs("book")
+    if not os.path.exists(to_dir):
+        os.makedirs(to_dir)
 
     # Read the list of files from book.txt
-    with open("book.txt", "r", encoding="utf-8") as f:
+    with open(filenames_txt, "r", encoding="utf-8") as f:
         filenames = [line.strip() for line in f if line.strip()]
 
     print(f"Found {len(filenames)} files to copy")
@@ -44,7 +43,7 @@ def copy_listed_files(from_dir):
     copied = 0
     for filename in filenames:
         src = os.path.join(from_dir, filename)
-        dst = os.path.join("book", filename)
+        dst = os.path.join(to_dir, filename)
 
         try:
             shutil.copy2(src, dst)
@@ -67,30 +66,21 @@ def extract_content(html_content):
         return None, None, None
     end_index = html_content.find(end_marker, start_index + len(start_marker))
     if end_index == -1:
+        # some files do not have ending "<!-- cst-content ends -->"
+        end_marker = '<script src="../web/paliscriptconverter_edited.js" defer></script><script src="../web/handleClick.js" defer></script>'
+    end_index = html_content.find(end_marker, start_index + len(start_marker))
+    if end_index == -1:
         return None, None, None
 
     head = html_content[:start_index]
     extracted_content = html_content[start_index + len(start_marker) : end_index]
-    tail = html_content[end_index + len(end_marker) :]
+    if end_marker == "<!-- cst-content ends -->":
+        tail = html_content[end_index + len(end_marker) :]
+    else:
+        tail = "\n\n" + html_content[end_index:]
+
     return head, extracted_content, tail
 
-
-def add_anchor_attributes(html_content):
-    soup = BeautifulSoup(html_content, "html.parser")
-    element_id = 1
-    # Iterate only through *direct* children of the root (what was parsed)
-    for element in soup.find_all(recursive=False):
-        # Only add name attribute if element text is not empty after stripping
-        if element.get_text().strip():
-            if element.get('id'):
-                print(f"Warning: Element already has ID '{element['id']}', skipping")
-                continue
-            # Add anchor tag before the element
-            anchor = soup.new_tag("a", id=f"k{element_id}")
-            element.insert_before(anchor)
-            # element["id"] = f"k{element_id}"
-            element_id += 1
-    return str(soup)
 
 def add_id_attributes(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
@@ -99,14 +89,16 @@ def add_id_attributes(html_content):
     for element in soup.find_all(recursive=False):
         # Only add name attribute if element text is not empty after stripping
         if element.get_text().strip():
-            if element.get('id'):
-                print(f"Warning: Element already has ID '{element['id']}', skipping")
-                continue
+            if element.get("id"):
+                raise Exception(f"Error: Element already has ID '{element['id']}'.")
             element["id"] = f"k{element_id}"
+            # anchor = soup.new_tag("a", id=f"k{element_id}")
+            # element.insert_before(anchor)
             element_id += 1
     return str(soup)
 
-def process_html_files(input_dir, output_dir, text_dir):
+
+def process_html_files(input_dir, output_dir, text_dir, add_id=True):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     if not os.path.exists(text_dir):
@@ -133,18 +125,20 @@ def process_html_files(input_dir, output_dir, text_dir):
 
             if html_body:
                 x += 1
-                modified_html = add_id_attributes(html_body)
-
-                full_output = (
-                    head
-                    + "<!-- cst-content -->"
-                    + modified_html
-                    + "<!-- cst-content ends -->"
-                    + tail
-                )
-
-                with open(output_filepath, "w", encoding="utf-8") as outfile:
-                    outfile.write(full_output)
+                if add_id:
+                    modified_html = add_id_attributes(html_body)
+                    full_output = (
+                        head
+                        + "<!-- cst-content -->"
+                        + modified_html
+                        + "\n"
+                        + "<!-- cst-content ends -->"
+                        + tail
+                    )
+                    with open(output_filepath, "w", encoding="utf-8") as outfile:
+                        outfile.write(full_output)
+                else:
+                    modified_html = html_body
 
                 # Extract text with element IDs
                 soup = BeautifulSoup(modified_html, "html.parser")
@@ -169,8 +163,7 @@ def process_html_files(input_dir, output_dir, text_dir):
             print(f"Error processing {filename}: {e}")
 
 
-if __name__ == "__main__":
-   # create fts_title.json
+def gen_title():
     with open("./data/xml_title.json", "r", encoding="utf-8") as f:
         xml_title = json.load(f)
         BOOK = {}
@@ -193,16 +186,21 @@ if __name__ == "__main__":
         with open("./data/fts_all_title.json", "w", encoding="utf-8") as a:
             json.dump(ALL, a, ensure_ascii=False, indent=2)
 
-    if not os.path.exists("./book"):
-        copy_listed_files(
-            "/home/p/pDEV/tipitakapali/production/tipitakapali_org_web/book"
-        )
 
-    # process
-    input_directory = "book"
-    output_directory = "output_html"
-    text_dir = "output_text"
+if __name__ == "__main__":
+    gen_title()
 
-    # process_html_files(input_directory, output_directory, text_dir)
+    # chapter_app = "chapter_flutter_si"
 
- 
+    # copy_listed_files(
+    #     "./chapter_2700_for_all.txt",
+    #     "/home/p/pDEV/tipitakapali/production/tipitakapali_org_flutter_min/assets/cstpali/chapter",
+    #     chapter_app,
+    # )
+
+    # ##
+    # input_directory = chapter_app
+    # output_directory = f"{chapter_app}_html"
+    # text_dir = f"{chapter_app}_txt"
+
+    # process_html_files(input_directory, output_directory, text_dir, True)

@@ -1,4 +1,5 @@
 book/
+book-/
 output*
 *.db
 
