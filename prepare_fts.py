@@ -98,11 +98,11 @@ def add_id_attributes(html_content):
     return str(soup)
 
 
-def process_html_files(input_dir, output_dir, text_dir, add_id=True):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    if not os.path.exists(text_dir):
-        os.makedirs(text_dir)
+def process_html_files(input_dir, output_html_dir, output_text_dir, add_id=False):
+    if not os.path.exists(output_html_dir):
+        os.makedirs(output_html_dir)
+    if not os.path.exists(output_text_dir):
+        os.makedirs(output_text_dir)
 
     x = 0
 
@@ -111,8 +111,10 @@ def process_html_files(input_dir, output_dir, text_dir, add_id=True):
 
     for filename in filenames:
         input_filepath = os.path.join(input_dir, filename)
-        output_filepath = os.path.join(output_dir, filename)
-        text_filepath = os.path.join(text_dir, os.path.splitext(filename)[0] + ".txt")
+        output_filepath = os.path.join(output_html_dir, filename)
+        text_filepath = os.path.join(
+            output_text_dir, os.path.splitext(filename)[0] + ".txt"
+        )
 
         try:
             with open(input_filepath, "r", encoding="utf-8") as infile:
@@ -164,8 +166,33 @@ def process_html_files(input_dir, output_dir, text_dir, add_id=True):
 
 
 def gen_title():
+    fix_vibhanga_anutika = {
+        "abh02t.tik18.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 1. Khandhavibhaṅgo",
+        "abh02t.tik19.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 2. Āyatanavibhaṅgo",
+        "abh02t.tik20.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 3. Dhātuvibhaṅgo",
+        "abh02t.tik21.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 4. Saccavibhaṅgo",
+        "abh02t.tik22.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 5. Indriyavibhaṅgo",
+        "abh02t.tik23.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 6. Paṭiccasamuppādavibhaṅgo",
+        "abh02t.tik24.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 7. Satipaṭṭhānavibhaṅgo",
+        "abh02t.tik25.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 8. Sammappadhānavibhaṅgo",
+        "abh02t.tik26.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 9. Iddhipādavibhaṅgo",
+        "abh02t.tik27.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 10. Bojjhaṅgavibhaṅgo",
+        "abh02t.tik28.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 11. Maggaṅgavibhaṅgo",
+        "abh02t.tik29.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 12. Jhānavibhaṅgo",
+        "abh02t.tik30.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 13. Appamaññāvibhaṅgo",
+        "abh02t.tik31.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 14. Sikkhāpadavibhaṅgo",
+        "abh02t.tik32.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 15. Paṭisambhidāvibhaṅgo",
+        "abh02t.tik33.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 16. Ñāṇavibhaṅgo",
+        "abh02t.tik34.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 17. Khuddakavatthuvibhaṅgo",
+        "abh02t.tik35.xml": "Tīkā > Abhidhammapiṭaka (ṭīkā) > Vibhaṅga-anuṭīkā > 18. Dhammahadayavibhaṅgo",
+    }
+
     with open("./data/xml_title.json", "r", encoding="utf-8") as f:
         xml_title = json.load(f)
+
+        for key_fix, value_fix in fix_vibhanga_anutika.items():
+            xml_title[key_fix] = value_fix
+
         BOOK = {}
         for k, v in xml_title.items():
             if k.endswith(".toc.xml"):
@@ -190,17 +217,17 @@ def gen_title():
 if __name__ == "__main__":
     gen_title()
 
-    # chapter_app = "chapter_flutter_si"
+    # chapter_input_dir = "chapter_web_ro"
+    # # copy_listed_files(
+    # #     "./chapter_2700_for_all.txt",
+    # #     "/home/p/pDEV/tipitakapali/production/tipitakapali_org_web/chapter",
+    # #     chapter_app,
+    # # )
 
-    # copy_listed_files(
-    #     "./chapter_2700_for_all.txt",
-    #     "/home/p/pDEV/tipitakapali/production/tipitakapali_org_flutter_min/assets/cstpali/chapter",
-    #     chapter_app,
-    # )
+    # #
+    # chapter_input_dir = "chapter_web_ro"
+    # input_directory = chapter_input_dir
+    # output_directory = f"{chapter_input_dir}_html"
+    # text_dir = f"{chapter_input_dir}_txt"
 
-    # ##
-    # input_directory = chapter_app
-    # output_directory = f"{chapter_app}_html"
-    # text_dir = f"{chapter_app}_txt"
-
-    # process_html_files(input_directory, output_directory, text_dir, True)
+    # process_html_files(input_directory, output_directory, text_dir, False)

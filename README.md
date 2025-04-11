@@ -8,6 +8,10 @@ Full-Text Search (FTS) for the **Tipitakapali.org**, (also computer, Flutter app
 
 ## Developer Notes  
 
+- Manual fix:
+abh02t.tik18->tik35.xml: Vibhaṅga-mūlaṭīkā -> Vibhaṅga-anuṭīkā
+
+
 If your given name is uPNRY, you should not be confused:
 
 #### Roman Pali Chapter Files  

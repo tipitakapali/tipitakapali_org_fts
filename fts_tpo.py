@@ -5,7 +5,7 @@ import sqlite3
 
 
 def add_tpo_sort(file_name):
-    """this is for sorting results by tipitaka collections"""
+    """this workaround is for sorting results by tipitaka collections"""
     sortPrefix = ""
     names = file_name.split(".")
     firstNamePart = names[0].strip()
@@ -57,7 +57,9 @@ def fts_txt_indexer(in_dir: str):
         os.remove(db)
     conn = sqlite3.connect(db)
     c = conn.cursor()
-    c.execute("CREATE VIRTUAL TABLE pn USING fts5(path, cont)")
+    # c.execute("CREATE VIRTUAL TABLE pn USING fts5(path, cont)")
+    c.execute("CREATE VIRTUAL TABLE pn USING fts5(path, cont, prefix=3)")
+
 
     # if text has vol1 or vol2, ignore its entire volume
     vols = sorted(
@@ -121,4 +123,4 @@ def fts_txt_indexer(in_dir: str):
 
 
 if __name__ == "__main__":
-    fts_txt_indexer("chapter_flutter_ro_txt")
+    fts_txt_indexer("chapter_web_ro_txt")

@@ -1,5 +1,7 @@
 book/
 book-/
+chapter_*/
+
 output*
 *.db
 
