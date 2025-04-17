@@ -215,19 +215,19 @@ def gen_title():
 
 
 if __name__ == "__main__":
-    gen_title()
+    # gen_title()
 
-    # chapter_input_dir = "chapter_web_ro"
-    # # copy_listed_files(
-    # #     "./chapter_2700_for_all.txt",
-    # #     "/home/p/pDEV/tipitakapali/production/tipitakapali_org_web/chapter",
-    # #     chapter_app,
-    # # )
+    chapter_input_dir = "chapter_web_ro"
+    copy_listed_files(
+        "./sortedByPitakaChapterFiles.txt",
+        "/home/p/pDEV/tipitakapali/production/tipitakapali_org_web/chapter",
+        chapter_input_dir,
+    )
 
-    # #
-    # chapter_input_dir = "chapter_web_ro"
-    # input_directory = chapter_input_dir
-    # output_directory = f"{chapter_input_dir}_html"
-    # text_dir = f"{chapter_input_dir}_txt"
+    #
+    chapter_input_dir = "chapter_web_ro"
+    input_directory = chapter_input_dir
+    output_directory = f"{chapter_input_dir}_html"
+    text_dir = f"{chapter_input_dir}_txt"
 
-    # process_html_files(input_directory, output_directory, text_dir, False)
+    process_html_files(input_directory, output_directory, text_dir, False)
