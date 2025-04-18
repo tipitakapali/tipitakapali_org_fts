@@ -97,6 +97,20 @@ def add_id_attributes(html_content):
             element_id += 1
     return str(soup)
 
+def extract_text_without_extra_spaces(element):
+    """Extract text from an element without adding extra spaces between bold tags."""
+    text = ""
+    for content in element.contents:
+        if content.name == "a" and "pinfo" in content.get("class", []):
+            # Skip pagination markers
+            continue
+        elif content.name:
+            # It's a tag, get its text recursively
+            text += extract_text_without_extra_spaces(content)
+        else:
+            # It's a string, add it
+            text += content.string if content.string else ""
+    return text
 
 def process_html_files(input_dir, output_html_dir, output_text_dir, add_id=False):
     if not os.path.exists(output_html_dir):
@@ -110,6 +124,9 @@ def process_html_files(input_dir, output_html_dir, output_text_dir, add_id=False
     print("Total files:", len(filenames))
 
     for filename in filenames:
+        # if not filename.startswith("vin01m.mul2"):
+        #     continue
+        # print(filename)
         input_filepath = os.path.join(input_dir, filename)
         output_filepath = os.path.join(output_html_dir, filename)
         text_filepath = os.path.join(
@@ -147,8 +164,13 @@ def process_html_files(input_dir, output_html_dir, output_text_dir, add_id=False
                 text_lines = []
                 for element in soup.find_all(recursive=False):
                     element_id = element.get("id", "")
-                    # Replace consecutive whitespace with a single space and preserve spaces
-                    text = " ".join(element.get_text().split())
+                    
+                    # Use our custom function to extract text properly
+                    raw_text = extract_text_without_extra_spaces(element)
+                    
+                    # Remove consecutive whitespace and preserve spaces
+                    text = re.sub(r"\s+", " ", raw_text).strip()
+                    
                     if text:
                         text = clean_tpo_html(text)
                         text_lines.append(f"@{element_id} {text}")
